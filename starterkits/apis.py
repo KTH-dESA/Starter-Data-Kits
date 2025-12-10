@@ -3,6 +3,16 @@ import pycountry
 import pygadm
 import osmnx as ox
 import time
+import requests
+
+def download_file(url, path):
+    """Download a file from an http url."""
+    response = requests.get(url, stream=True)
+    response.raise_for_status()
+    with open(path, 'wb') as f:
+        for chunk in response.iter_content(chunk_size=8192):
+            f.write(chunk)
+
 
 def log(msg, start_time):
     """Print message with elapsed time since start."""
@@ -12,7 +22,7 @@ def log(msg, start_time):
 def get_specs(country):
   os.makedirs(f'Data/{country}/Specs', exist_ok=True)
   country_name = pycountry.countries.get(alpha_3=country).name # type: ignore
-  !wget 'https://geospatialsdk.s3.amazonaws.com/OnSSET_specs/{country}_data.yaml' -O 'Data/{country}/Specs/{country}_data.yaml'
+  download_file(f'https://geospatialsdk.s3.amazonaws.com/OnSSET_specs/{country}_data.yaml', f'Data/{country}/Specs/{country}_data.yaml')
 
 def get_boundaries(country):
   os.makedirs(f'Data/{country}/Boundaries', exist_ok=True)
@@ -23,33 +33,33 @@ def get_boundaries(country):
 def get_population_data(country, resolution):
   os.makedirs(f'Data/{country}/Population', exist_ok=True)
   if resolution == '1km':
-    !wget 'https://data.worldpop.org/GIS/Population/Global_2015_2030/R2025A/2023/{country}/v1/1km_ua/constrained/{country.lower()}_pop_2023_CN_1km_R2025A_UA_v1.tif' -O 'Data/{country}/Population/{country}_pop.tif'
+    download_file(f'https://data.worldpop.org/GIS/Population/Global_2015_2030/R2025A/2023/{country}/v1/1km_ua/constrained/{country.lower()}_pop_2023_CN_1km_R2025A_UA_v1.tif', f'Data/{country}/Population/{country}_pop.tif')
   elif resolution == '100m':
     pass
 
 def get_power_lines(country):
   os.makedirs(f'Data/{country}/MV lines', exist_ok=True)
-  !wget 'https://zenodo.org/records/3628142/files/grid.gpkg' -O 'Data/Africa_mv_lines.gpkg'
+  download_file('https://zenodo.org/records/3628142/files/grid.gpkg', 'Data/Africa_mv_lines.gpkg')
 
 def get_wind_data(country, height):
   os.makedirs(f'Data/{country}/Wind speed', exist_ok=True)
-  !wget 'https://globalwindatlas.info/api/gis/country/{country}/wind-speed/{height}' -O 'Data/{country}/Wind speed/{country}_wind_speed_{height}.tif'
+  download_file(f'https://globalwindatlas.info/api/gis/country/{country}/wind-speed/{height}', f'Data/{country}/Wind speed/{country}_wind_speed_{height}.tif')
 
 def get_solar_data(country):
   os.makedirs(f'Data/{country}/Solar irradiation', exist_ok=True)
   country_name = pycountry.countries.get(alpha_3=country).name # type: ignore
-  !wget "https://api.globalsolaratlas.info/download/{country_name}/{country_name}_GISdata_LTAym_YearlyMonthlyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip" -O 'Data/{country}/Solar irradiation/{country}_solar_irradiance.tif'
+  download_file(f"https://api.globalsolaratlas.info/download/{country_name}/{country_name}_GISdata_LTAym_YearlyMonthlyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip", f'Data/{country}/Solar irradiation/{country}_solar_irradiance.tif')
 
 def get_dem_data(country):
   os.makedirs(f'Data/{Country}/Elevation', exist_ok=True)
   country_name = pycountry.countries.get(alpha_3=country).name # type: ignore
   boundaries = pygadm.Items(name=country_name, content_level=0)
   west, south, east, north = boundaries.total_bounds
-  !wget 'https://portal.opentopography.org/API/globaldem?demtype=NASADEM&south={south}&north={north}&west={west}&east={east}&outputFormat=GTiff&API_Key=demoapikeyot2022' -O 'Data/{country}/Elevation/{country}_dem.tif'
+  download_file(f'https://portal.opentopography.org/API/globaldem?demtype=NASADEM&south={south}&north={north}&west={west}&east={east}&outputFormat=GTiff&API_Key=demoapikeyot2022', f'Data/{country}/Elevation/{country}_dem.tif')
 
 def get_ntl_data(country):
   os.makedirs(f'Data/{Country}/Nighttime lights', exist_ok=True)
-  !wget 'https://data.worldpop.org/GIS/Covariates/Global_2015_2030/{country}/VIIRS/v1/fvf//{country.lower()}_viirs_fvf_2023_100m_v1.tif' -O 'Data/{country}/Nighttime lights/{country}_ntl.tif'
+  download_file(f'https://data.worldpop.org/GIS/Covariates/Global_2015_2030/{country}/VIIRS/v1/fvf//{country.lower()}_viirs_fvf_2023_100m_v1.tif', f'Data/{country}/Nighttime lights/{country}_ntl.tif')
 
 def get_roads(country, road_types):
   os.makedirs(f'Data/{country}/Roads', exist_ok=True)

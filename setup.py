@@ -12,6 +12,7 @@ setup(
         'pygadm',
         'osmnx',
         'boto3',
+        'requests',
     ],
     python_requires='>=3.6',
 )
