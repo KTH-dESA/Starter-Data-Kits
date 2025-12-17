@@ -29,6 +29,7 @@ def get_boundaries(country):
   os.makedirs(f'Data/{country}/Boundaries', exist_ok=True)
   country_name = pycountry.countries.get(alpha_3=country).name # type: ignore
   boundaries = pygadm.Items(country_name, content_level=0)
+  boundaries.crs = 4326
   boundaries.to_file(f'Data/{country}/Boundaries/{country}_adm_0.gpkg')
   print(f"Downloaded: {country_name} boundaries to Data/{country}/Boundaries/{country}_adm_0.gpkg")
 
@@ -53,7 +54,7 @@ def get_solar_data(country):
   download_file(f"https://api.globalsolaratlas.info/download/{country_name}/{country_name}_GISdata_LTAym_YearlyMonthlyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip", f'Data/{country}/Solar irradiation/{country}_solar_irradiance.tif')
 
 def get_dem_data(country):
-  os.makedirs(f'Data/{Country}/Elevation', exist_ok=True)
+  os.makedirs(f'Data/{country}/Elevation', exist_ok=True)
   country_name = pycountry.countries.get(alpha_3=country).name # type: ignore
   boundaries = pygadm.Items(name=country_name, content_level=0)
   west, south, east, north = boundaries.total_bounds
