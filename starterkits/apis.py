@@ -8,7 +8,14 @@ from .utils import handle_exceptions
 
 
 def download_file(url, path, name):
-    """Download a file from an http url."""
+    """
+    Download a file from an http url.
+
+    Args:
+        url (str): The URL to download from.
+        path (str): The local path to save the file.
+        name (str): The name of the dataset being downloaded.
+    """
     print(f"Downloading {name} from: ", url)
     response = requests.get(url, stream=True)
     response.raise_for_status()
@@ -24,12 +31,25 @@ def log(msg, start_time):
 
 @handle_exceptions
 def get_specs(country):
+    """
+    Download OnSSET specifications for a country.
+
+    Args:
+        country (str): ISO3 country code.
+    """
   os.makedirs(f'Data/{country}/Specs', exist_ok=True)
   download_file(f'https://geospatialsdk.s3.amazonaws.com/OnSSET_specs/{country}_data.yaml', f'Data/{country}/Specs/{country}_data.yaml', 'Specs')
 
 @handle_exceptions
 def get_boundaries(country):
+    """
+    Download administrative boundaries (level 0) for a country.
+
+    Args:
+        country (str): ISO3 country code.
+    """
   os.makedirs(f'Data/{country}/Boundaries', exist_ok=True)
+  print(f"Getting boundaries for {country}")
   country_name = pycountry.countries.get(alpha_3=country).name # type: ignore
   boundaries = pygadm.Items(country_name, content_level=0)
   boundaries.crs = 4326
@@ -38,6 +58,13 @@ def get_boundaries(country):
 
 @handle_exceptions
 def get_population_data(country, resolution):
+    """
+    Download population data for a country at a specific resolution.
+
+    Args:
+        country (str): ISO3 country code.
+        resolution (str): The resolution of the data (e.g., '1km').
+    """
   os.makedirs(f'Data/{country}/Population', exist_ok=True)
   if resolution == '1km':
     download_file(f'https://data.worldpop.org/GIS/Population/Global_2015_2030/R2025A/2023/{country}/v1/1km_ua/constrained/{country.lower()}_pop_2023_CN_1km_R2025A_UA_v1.tif', f'Data/{country}/Population/{country}_pop.tif', 'Population')
@@ -46,22 +73,47 @@ def get_population_data(country, resolution):
 
 @handle_exceptions
 def get_power_lines(country):
+    """
+    Download MV power lines data.
+
+    Args:
+        country (str): ISO3 country code.
+    """
   os.makedirs(f'Data/{country}/MV lines', exist_ok=True)
   download_file('https://zenodo.org/records/3628142/files/grid.gpkg', 'Data/Africa_mv_lines.gpkg', 'Power lines')
 
 @handle_exceptions
 def get_wind_data(country, height):
+    """
+    Download wind speed data for a country at a specific height.
+
+    Args:
+        country (str): ISO3 country code.
+        height (str): The height for wind speed data.
+    """
   os.makedirs(f'Data/{country}/Wind speed', exist_ok=True)
   download_file(f'https://globalwindatlas.info/api/gis/country/{country}/wind-speed/{height}', f'Data/{country}/Wind speed/{country}_wind_speed_{height}.tif', 'Wind speed')
 
 @handle_exceptions
 def get_solar_data(country):
+    """
+    Download solar irradiation data for a country.
+
+    Args:
+        country (str): ISO3 country code.
+    """
   os.makedirs(f'Data/{country}/Solar irradiation', exist_ok=True)
   country_name = pycountry.countries.get(alpha_3=country).name # type: ignore
-  download_file(f"https://api.globalsolaratlas.info/download/{country_name}/{country_name}_GISdata_LTAym_YearlyMonthlyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip", f'Data/{country}/Solar irradiation/{country}_solar_irradiance.tif', 'Solar irradiation')
+  download_file(f"https://api.globalsolaratlas.info/download/{country_name}/{country_name}_GISdata_LTAym_YearlyMonthlyTotals_GlobalSolarAtlas-v2_GEOTIFF.zip", f'Data/{country}/Solar irradiation/{country}_solar_irradiance.zip', 'Solar irradiation')
 
 @handle_exceptions
 def get_dem_data(country):
+    """
+    Download Digital Elevation Model (DEM) data for a country.
+
+    Args:
+        country (str): ISO3 country code.
+    """
   os.makedirs(f'Data/{country}/Elevation', exist_ok=True)
   country_name = pycountry.countries.get(alpha_3=country).name # type: ignore
   boundaries = pygadm.Items(name=country_name, content_level=0)
@@ -70,11 +122,24 @@ def get_dem_data(country):
 
 @handle_exceptions
 def get_ntl_data(country):
+    """
+    Download Nighttime Lights (NTL) data for a country.
+
+    Args:
+        country (str): ISO3 country code.
+    """
   os.makedirs(f'Data/{country}/Nighttime lights', exist_ok=True)
   download_file(f'https://data.worldpop.org/GIS/Covariates/Global_2015_2030/{country}/VIIRS/v1/fvf//{country.lower()}_viirs_fvf_2023_100m_v1.tif', f'Data/{country}/Nighttime lights/{country}_ntl.tif', 'Nighttime lights')
 
 @handle_exceptions
 def get_roads(country, road_types):
+    """
+    Download and process road network data for a country.
+
+    Args:
+        country (str): ISO3 country code.
+        road_types (list): List of OSM highway types to include.
+    """
   os.makedirs(f'Data/{country}/Roads', exist_ok=True)
   output_dir = f'Data/{country}/Roads'
   country_start = time.time()
