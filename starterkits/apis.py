@@ -4,7 +4,7 @@ import pygadm
 import osmnx as ox
 import time
 import requests
-from .utils import handle_exceptions
+from .utils import handle_exceptions, mask_raster_with_geometry
 
 
 def download_file(url, path, name):
@@ -93,6 +93,7 @@ def get_wind_data(country, height):
     """
   os.makedirs(f'Data/{country}/Wind speed', exist_ok=True)
   download_file(f'https://globalwindatlas.info/api/gis/country/{country}/wind-speed/{height}', f'Data/{country}/Wind speed/{country}_wind_speed_{height}.tif', 'Wind speed')
+  mask_raster_with_geometry(f'Data/{country}/Wind speed/{country}_wind_speed_{height}.tif', f'Data/{country}/Boundaries/{country}_adm_0.gpkg', f'Data/{country}/Wind speed/{country}_wind_speed_{height}.tif')
 
 @handle_exceptions
 def get_solar_data(country):
