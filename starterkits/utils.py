@@ -2,6 +2,7 @@ import functools
 import logging
 import rasterio
 import rasterio.mask
+import zipfile
 
 def handle_exceptions(func):
     """
@@ -17,6 +18,7 @@ def handle_exceptions(func):
             return None
     return wrapper
 
+@handle_exceptions
 def mask_raster_with_geometry(raster_path, shapes, output_path):
     """
     Mask a raster using a list of geometries or a GeoDataFrame.
@@ -45,3 +47,16 @@ def mask_raster_with_geometry(raster_path, shapes, output_path):
         dest.write(out_image)
     
     print(f"Masked raster saved to {output_path}")
+
+@handle_exceptions
+def unzip_file(zip_path, extract_to):
+    """
+    Unzip a file to a destination directory.
+
+    Args:
+        zip_path (str): Path to the zip file.
+        extract_to (str): Directory to extract files to.
+    """
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall(extract_to)
+    print(f"Extracted {zip_path} to {extract_to}")
