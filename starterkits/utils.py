@@ -1,8 +1,8 @@
 import functools
-import logging
 import rasterio
 import rasterio.mask
 import zipfile
+import geopandas as gpd
 
 def handle_exceptions(func):
     """
