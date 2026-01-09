@@ -50,11 +50,10 @@ def get_boundaries(country):
     """
     os.makedirs(f'Data/{country}/Boundaries', exist_ok=True)
     print(f"Getting boundaries for {country}")
-    country_name = pycountry.countries.get(alpha_3=country).name # type: ignore
-    boundaries = pygadm.Items(country_name, content_level=0)
+    boundaries = pygadm.Items(admin=country, content_level=0)
     boundaries.crs = 4326
     boundaries.to_file(f'Data/{country}/Boundaries/{country}_adm_0.gpkg')
-    print(f"Downloaded: {country_name} boundaries to Data/{country}/Boundaries/{country}_adm_0.gpkg")
+    print(f"Downloaded: {country} boundaries to Data/{country}/Boundaries/{country}_adm_0.gpkg")
 
 @handle_exceptions
 def get_population_data(country, resolution):
@@ -80,7 +79,7 @@ def get_power_lines(country):
         country (str): ISO3 country code.
     """
     os.makedirs(f'Data/{country}/MV lines', exist_ok=True)
-    download_file('https://zenodo.org/records/3628142/files/grid.gpkg', 'Data/Africa_mv_lines.gpkg', 'Power lines')
+    download_file(f'https://geospatialsdk.s3.amazonaws.com/Power_network/Gridfinder/{country}_mv_lines.gpkg', f'Data/{country}/MV lines/{country}_mv_lines.gpkg', 'Power lines')
 
 @handle_exceptions
 def get_wind_data(country, height):
@@ -134,7 +133,7 @@ def get_ntl_data(country):
     download_file(f'https://data.worldpop.org/GIS/Covariates/Global_2015_2030/{country}/VIIRS/v1/fvf//{country.lower()}_viirs_fvf_2023_100m_v1.tif', f'Data/{country}/Nighttime lights/{country}_ntl.tif', 'Nighttime lights')
 
 @handle_exceptions
-def get_roads(country, road_types):
+def get_roads(country): #, road_types):
     """
     Download and process road network data for a country.
 
@@ -143,26 +142,28 @@ def get_roads(country, road_types):
         road_types (list): List of OSM highway types to include.
     """
     os.makedirs(f'Data/{country}/Roads', exist_ok=True)
-    output_dir = f'Data/{country}/Roads'
-    country_start = time.time()
-    # Get country name from ISO3
-    country_name = pycountry.countries.get(alpha_3=country).name # type: ignore
-    log(f"Getting roads for {country_name} ({country})", country_start)
+    download_file(f'https://geospatialsdk.s3.amazonaws.com/Roads/Country/{country}_roads.gpkg', f'Data/{country}/Roads/{country}_roads.gpkg', 'Roads')
+    # os.makedirs(f'Data/{country}/Roads', exist_ok=True)
+    # output_dir = f'Data/{country}/Roads'
+    # country_start = time.time()
+    # # Get country name from ISO3
+    # country_name = pycountry.countries.get(alpha_3=country).name # type: ignore
+    # log(f"Getting roads for {country_name} ({country})", country_start)
 
-    # Download road network as GeoDataFrame (edges only)
-    G = ox.graph_from_place(country_name, network_type="drive")
-    gdf_edges = ox.graph_to_gdfs(G, nodes=False, edges=True)
+    # # Download road network as GeoDataFrame (edges only)
+    # G = ox.graph_from_place(country_name, network_type="drive")
+    # gdf_edges = ox.graph_to_gdfs(G, nodes=False, edges=True)
 
-    # Filter by the desired highway types
-    gdf_edges = gdf_edges[gdf_edges["highway"].isin(road_types)]
-    log(f"Found {len(gdf_edges)} road segments.", country_start)
+    # # Filter by the desired highway types
+    # gdf_edges = gdf_edges[gdf_edges["highway"].isin(road_types)]
+    # log(f"Found {len(gdf_edges)} road segments.", country_start)
 
-    # Define output path
-    out_path = os.path.join(output_dir, f"{country}_roads.gpkg")
+    # # Define output path
+    # out_path = os.path.join(output_dir, f"{country}_roads.gpkg")
 
-    # Save shapefile
-    if len(gdf_edges) > 0:
-        gdf_edges.to_file(out_path)
-        log(f"Saved file to: {out_path}", country_start)
-    else:
-        log("No roads found with the selected filters. Nothing saved.", country_start)
+    # # Save shapefile
+    # if len(gdf_edges) > 0:
+    #     gdf_edges.to_file(out_path)
+    #     log(f"Saved file to: {out_path}", country_start)
+    # else:
+    #     log("No roads found with the selected filters. Nothing saved.", country_start)
