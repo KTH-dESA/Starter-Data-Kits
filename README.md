@@ -7,7 +7,7 @@ You will need Google Colab account to run the SDK for your tool of choice. After
 * **OnSSET SDK:** [![Open in Colab: OnSSET](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/KTH-dESA/Starter-Data-Kits/blob/main/OnSSET_SDK.ipynb)
 
 ## How to contribute to the SDKs
-If you want to contribute to the SDK of a tool, please follow the ext steps:
+If you want to contribute to the SDK of a tool, please follow the next steps:
 * Fork this repository
 * Make relevant changes, such as adding new APIs, connection protocols, and download functions to the source code
 * Commit your changes with clear descriptions
