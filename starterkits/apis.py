@@ -56,7 +56,7 @@ def get_boundaries(country):
     print(f"Downloaded: {country} boundaries to Data/{country}/Boundaries/{country}_adm_0.gpkg")
 
 @handle_exceptions
-def get_population_data(country, resolution):
+def get_population_data(country, resolution, year=2025):
     """
     Download population data for a country at a specific resolution.
 
