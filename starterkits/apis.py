@@ -123,8 +123,8 @@ def get_dem_data(country, api_key='demoapikeyot2022'):
         country (str): ISO3 country code.
     """
     os.makedirs(f'Data/{country}/Elevation', exist_ok=True)
-    country_name = pycountry.countries.get(alpha_3=country).name # type: ignore
-    boundaries = pygadm.Items(name=country_name, content_level=0)
+    boundaries = pygadm.Items(admin=country, content_level=0)
+    boundaries.crs = 4326
     west, south, east, north = boundaries.total_bounds
     download_file(f'https://portal.opentopography.org/API/globaldem?demtype=NASADEM&south={south}&north={north}&west={west}&east={east}&outputFormat=GTiff&API_Key={api_key}', f'Data/{country}/Elevation/{country}_dem.tif', 'Elevation')
 
