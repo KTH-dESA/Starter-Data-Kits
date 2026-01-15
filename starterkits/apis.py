@@ -130,31 +130,41 @@ def get_dem_data(country, api_key='demoapikeyot2022'):
     
     # Estimate area of the bounding box in km2
     avg_lat = (south + north) / 2
-    height_km = (north - south) * 111
-    width_km = (east - west) * 111 * math.cos(math.radians(avg_lat))
+    height_deg = north - south
+    width_deg = east - west
+    height_km = height_deg * 111
+    width_km = width_deg * 111 * math.cos(math.radians(avg_lat))
     area_km2 = height_km * width_km
     
     output_path = f'Data/{country}/Elevation/{country}_dem.tif'
+    limit_km2 = 450000
     
-    if area_km2 > 450000:
-        print(f"Area is large ({area_km2:.0f} km2), splitting into two regions.")
-        mid_lat = (south + north) / 2
+    if area_km2 > limit_km2:
+        num_parts = math.ceil(area_km2 / limit_km2)
+        print(f"Area is large ({area_km2:.0f} km2), splitting into {num_parts} regions.")
         
-        # Region 1: South
-        url1 = f'https://portal.opentopography.org/API/globaldem?demtype=NASADEM&south={south}&north={mid_lat}&west={west}&east={east}&outputFormat=GTiff&API_Key={api_key}'
-        path1 = f'Data/{country}/Elevation/{country}_dem_part1.tif'
-        download_file(url1, path1, 'Elevation Part 1')
+        lat_step = height_deg / num_parts
+        part_paths = []
         
-        # Region 2: North
-        url2 = f'https://portal.opentopography.org/API/globaldem?demtype=NASADEM&south={mid_lat}&north={north}&west={west}&east={east}&outputFormat=GTiff&API_Key={api_key}'
-        path2 = f'Data/{country}/Elevation/{country}_dem_part2.tif'
-        download_file(url2, path2, 'Elevation Part 2')
+        for i in range(num_parts):
+            p_south = south + i * lat_step
+            p_north = south + (i + 1) * lat_step
+            # Handle potential floating point issues on the last part
+            if i == num_parts - 1:
+                p_north = north
+                
+            p_path = f'Data/{country}/Elevation/{country}_dem_part{i+1}.tif'
+            p_url = f'https://portal.opentopography.org/API/globaldem?demtype=NASADEM&south={p_south}&north={p_north}&west={west}&east={east}&outputFormat=GTiff&API_Key={api_key}'
+            
+            download_file(p_url, p_path, f'Elevation Part {i+1}')
+            part_paths.append(p_path)
         
-        merge_rasters([path1, path2], output_path)
+        merge_rasters(part_paths, output_path)
         
         # Cleanup
-        os.remove(path1)
-        os.remove(path2)
+        for p in part_paths:
+            if os.path.exists(p):
+                os.remove(p)
     else:
         url = f'https://portal.opentopography.org/API/globaldem?demtype=NASADEM&south={south}&north={north}&west={west}&east={east}&outputFormat=GTiff&API_Key={api_key}'
         download_file(url, output_path, 'Elevation')
