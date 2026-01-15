@@ -115,7 +115,7 @@ def get_solar_data(country):
     unzip_file(f'Data/{country}/Solar irradiation/{country}_solar_irradiance.zip', f'Data/{country}/Solar irradiation')
   
 @handle_exceptions
-def get_dem_data(country):
+def get_dem_data(country, api_key='demoapikeyot2022'):
     """
     Download Digital Elevation Model (DEM) data for a country.
 
@@ -126,7 +126,7 @@ def get_dem_data(country):
     country_name = pycountry.countries.get(alpha_3=country).name # type: ignore
     boundaries = pygadm.Items(name=country_name, content_level=0)
     west, south, east, north = boundaries.total_bounds
-    download_file(f'https://portal.opentopography.org/API/globaldem?demtype=NASADEM&south={south}&north={north}&west={west}&east={east}&outputFormat=GTiff&API_Key=demoapikeyot2022', f'Data/{country}/Elevation/{country}_dem.tif', 'Elevation')
+    download_file(f'https://portal.opentopography.org/API/globaldem?demtype=NASADEM&south={south}&north={north}&west={west}&east={east}&outputFormat=GTiff&API_Key={api_key}', f'Data/{country}/Elevation/{country}_dem.tif', 'Elevation')
 
 @handle_exceptions
 def get_ntl_data(country):
