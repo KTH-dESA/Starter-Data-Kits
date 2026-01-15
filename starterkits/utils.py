@@ -1,6 +1,7 @@
 import functools
 import rasterio
 import rasterio.mask
+from rasterio.merge import merge
 import zipfile
 import geopandas as gpd
 
@@ -53,6 +54,37 @@ def mask_raster_with_geometry(raster_path, shapes, output_path):
         dest.write(out_image)
     
     print(f"Masked raster saved to {output_path}")
+
+def merge_rasters(raster_paths, output_path):
+    """
+    Merge multiple rasters into a single file.
+
+    Args:
+        raster_paths (list): List of paths to the raster files to merge.
+        output_path (str): Path to save the merged raster.
+    """
+    src_files_to_mosaic = []
+    for fp in raster_paths:
+        src = rasterio.open(fp)
+        src_files_to_mosaic.append(src)
+
+    mosaic, out_trans = merge(src_files_to_mosaic)
+    
+    out_meta = src_files_to_mosaic[0].meta.copy()
+    out_meta.update({
+        "driver": "GTiff",
+        "height": mosaic.shape[1],
+        "width": mosaic.shape[2],
+        "transform": out_trans
+    })
+
+    with rasterio.open(output_path, "w", **out_meta) as dest:
+        dest.write(mosaic)
+    
+    for src in src_files_to_mosaic:
+        src.close()
+    
+    print(f"Merged rasters saved to {output_path}")
 
 def unzip_file(zip_path, extract_to):
     """
